@@ -69,4 +69,8 @@ export class UsersService {
         const { password_hash, current_token, ...user } = foundUser;
         return user;
     }
+
+    async remove(id: number): Promise<void> {
+        await this.userRepository.delete(id);
+    }
 }

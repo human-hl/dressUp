@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Patch, Req, UseGuards, Delete } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -22,5 +22,11 @@ export class UsersController {
   async updateProfile(@Req() req, @Body() body: UpdateProfileDto) {
     return this.usersService.updateProfile(req.user.sub, body)
   }
+  @Delete('profile')
+@UseGuards(JwtAuthGuard)
+async deleteProfile(@Req() req) {
+    await this.usersService.remove(req.user.sub);
+    return { message: 'Аккаунт удалён' };
+}
 
 }

@@ -134,51 +134,94 @@ const OutfitsPreview: React.FC<OutfitsPreviewProps> = ({ outfits }) => {
             </Box>
 
             <Box sx={styles.grid}>
-                {filteredOutfits.slice(0, 5).map((outfit) => {
-                    const previewItems = outfit.items?.slice(0, 4) || [];
-                    return (
-                        <Card
-                            key={outfit.id}
-                            sx={styles.card}
-                            onClick={() => navigate(`/panel/combinations/${outfit.id}`)}
+    {filteredOutfits.length === 0 ? (
+        <Card
+            sx={{
+                gridColumn: '1 / -1',
+                height: '160px',
+                width: '30%',
+                borderRadius: '12px',
+                border: '2px dashed #487886',
+                boxShadow: 'none',
+                backgroundColor: '#FAFAFA',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                '&:hover': {
+                    backgroundColor: '#F0F0F0',
+                },
+            }}
+            onClick={() => navigate('/panel/combinations/add')}
+        >
+            <Typography sx={{ fontSize: '2rem' }}>👗</Typography>
+            <Typography
+                sx={{
+                    color: '#8D6E63',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                }}
+            >
+                Здесь пока пусто
+            </Typography>
+            <Typography
+                sx={{
+                    color: '#BCAAA4',
+                    fontSize: '0.8rem',
+                }}
+            >
+                Создайте свою первую комбинацию
+            </Typography>
+        </Card>
+    ) : (
+        filteredOutfits.slice(0, 5).map((outfit) => {
+            const previewItems = outfit.items?.slice(0, 4) || [];
+            return (
+                <Card
+                    key={outfit.id}
+                    sx={styles.card}
+                    onClick={() => navigate(`/panel/combinations/${outfit.id}`)}
+                >
+                    {previewItems.length > 0 ? (
+                        previewItems.map((oi: any, i: number) => {
+                            const img = oi.item?.image_no_bg_url || oi.item?.image_url;
+                            return (
+                                <Box key={i} sx={styles.miniBox}>
+                                    {img ? (
+                                        <img
+                                            src={`http://localhost:3000${img}`}
+                                            alt=""
+                                            style={{
+                                                maxWidth: '100%',
+                                                maxHeight: '100%',
+                                                objectFit: 'contain',
+                                            }}
+                                        />
+                                    ) : (
+                                        <Typography sx={{ fontSize: '1rem' }}>👕</Typography>
+                                    )}
+                                </Box>
+                            );
+                        })
+                    ) : (
+                        <Typography
+                            sx={{
+                                gridColumn: '1/-1',
+                                textAlign: 'center',
+                                color: '#BCAAA4',
+                                fontSize: '0.8rem',
+                            }}
                         >
-                            {previewItems.length > 0 ? (
-                                previewItems.map((oi: any, i: number) => {
-                                    const img = oi.item?.image_no_bg_url || oi.item?.image_url;
-                                    return (
-                                        <Box key={i} sx={styles.miniBox}>
-                                            {img ? (
-                                                <img
-                                                    src={`http://localhost:3000${img}`}
-                                                    alt=""
-                                                    style={{
-                                                        maxWidth: '100%',
-                                                        maxHeight: '100%',
-                                                        objectFit: 'contain',
-                                                    }}
-                                                />
-                                            ) : (
-                                                <Typography sx={{ fontSize: '1rem' }}>👕</Typography>
-                                            )}
-                                        </Box>
-                                    );
-                                })
-                            ) : (
-                                <Typography
-                                    sx={{
-                                        gridColumn: '1/-1',
-                                        textAlign: 'center',
-                                        color: '#BCAAA4',
-                                        fontSize: '0.8rem',
-                                    }}
-                                >
-                                    Пусто
-                                </Typography>
-                            )}
-                        </Card>
-                    );
-                })}
-            </Box>
+                            Пусто
+                        </Typography>
+                    )}
+                </Card>
+            );
+        })
+    )}
+</Box>
 
             <Box sx={styles.viewAllRow}>
                 <Button sx={styles.viewAllBtn} onClick={() => navigate('/panel/combinations')}>
