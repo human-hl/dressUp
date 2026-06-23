@@ -15,6 +15,7 @@ import { DndContext } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { createOutfit } from '../../../redux/slices/outfitsSlice';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../../../api/axios';
 
 export interface CanvasItem extends IItem {
     dndId: string;
@@ -60,10 +61,10 @@ const AddCombinationPage: React.FC = () => {
     const { items } = useAppSelector((state: RootState) => state.items);
     const [activeCategory, setActiveCategory] = useState('Все');
     const [canvasItems, setCanvasItems] = useState<CanvasItem[]>([]);
-    const [cost, setCost] = useState('');
-    const [weather, setWeather] = useState('');
-    const [style, setStyle] = useState('');
-    const [category, setCategory] = useState('');
+   const [name, setName] = useState('');
+const [weather, setWeather] = useState('');
+const [style, setStyle] = useState('');
+const [category, setCategory] = useState('');
 
     useEffect(() => {
         if (items.length === 0) dispatch(fetchItems());
@@ -114,23 +115,20 @@ const AddCombinationPage: React.FC = () => {
     }
 
     try {
-        await dispatch(createOutfit({
-            name: `Комбинация ${new Date().toLocaleDateString()}`,
-            category,
-            style,
-            weather,
-            cost,
-            items: canvasItems.map(ci => ({
-                itemId: ci.id,
-                position_x: ci.position_x,
-                position_y: ci.position_y,
-                width: ci.width,
-                height: ci.height,
-                z_index: ci.z_index,
-            })),
-        })).unwrap();
-
-        alert('Комбинация создана!');
+       await dispatch(createOutfit({
+    name: name || `Комбинация ${new Date().toLocaleDateString()}`,
+    category,
+    style,
+    weather,
+    items: canvasItems.map(ci => ({
+        itemId: ci.id,
+        position_x: ci.position_x,
+        position_y: ci.position_y,
+        width: ci.width,
+        height: ci.height,
+        z_index: ci.z_index,
+    })),
+})).unwrap();
         navigate('/panel/combinations');
     } catch (err: any) {
         alert(err || 'Ошибка при создании');
@@ -175,7 +173,7 @@ const handleResize = (dndId: string, width: number, height: number) => {
                         <Typography sx={styles.sectionTitle}>Информация:</Typography>
                         <form onSubmit={handleSubmit}>
                             <Box sx={styles.fieldsRow}>
-                                <TextField fullWidth label="Цена" variant="outlined" sx={styles.input} value={cost} onChange={(e) => setCost(e.target.value)} placeholder="Ввести..." />
+                                <TextField fullWidth label="Название" variant="outlined" sx={styles.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Ввести..." />
                                 <FormControl fullWidth><InputLabel>Погода</InputLabel><Select value={weather} label="Погода" sx={styles.select} onChange={(e) => setWeather(e.target.value)}>{weathers.map((w) => (<MenuItem key={w} value={w}>{w}</MenuItem>))}</Select></FormControl>
                                 <FormControl fullWidth><InputLabel>Стиль</InputLabel><Select value={style} label="Стиль" sx={styles.select} onChange={(e) => setStyle(e.target.value)}>{styles_list.map((s) => (<MenuItem key={s} value={s}>{s}</MenuItem>))}</Select></FormControl>
                                 <FormControl fullWidth><InputLabel>Категория</InputLabel><Select value={category} label="Категория" sx={styles.select} onChange={(e) => setCategory(e.target.value)}>{outfitCategories.map((c) => (<MenuItem key={c} value={c}>{c}</MenuItem>))}</Select></FormControl>

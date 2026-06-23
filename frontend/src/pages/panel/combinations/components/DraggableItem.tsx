@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import { useDraggable } from '@dnd-kit/core';
 import type { IItem } from '../../../../redux/types/dashboard';
+import { API_URL } from '../../../../api/axios';
 
 interface DraggableItemProps {
     item: IItem;
@@ -42,7 +43,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ item, isSelected }) => {
         >
             {imageUrl ? (
                 <img
-                    src={`http://localhost:3000${imageUrl}`}
+                    src={`${API_URL}${imageUrl}`}
                     alt={item.name}
                     style={{ width: '50px', height: '50px', objectFit: 'contain', borderRadius: '4px' }}
                 />

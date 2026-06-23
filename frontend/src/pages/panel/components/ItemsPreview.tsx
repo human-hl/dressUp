@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { IItem } from '../../../redux/types/dashboard';
 import { useState } from 'react';
+import { API_URL } from '../../../api/axios';
 
 interface ItemsPreviewProps {
     items: IItem[];
@@ -191,7 +192,7 @@ const ItemsPreview: React.FC<ItemsPreviewProps> = ({ items }) => {
                                 <Box sx={styles.imageBox}>
                                     {img ? (
                                         <img
-                                            src={`http://localhost:3000${img}`}
+                                            src={`${API_URL}${img}`}
                                             alt={item.name}
                                             style={{
                                                 maxWidth: '100%',

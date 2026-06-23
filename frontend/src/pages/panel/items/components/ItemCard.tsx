@@ -1,6 +1,7 @@
 import { Card, Box, CardContent, Typography } from "@mui/material";
 import type { IItem } from "../../../../redux/types/dashboard";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from '../../../../api/axios';
 
 interface ItemCardProps {
     item: IItem;
@@ -38,7 +39,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
             >
                 {imageUrl ? (
                     <img
-                        src={`http://localhost:3000${imageUrl}`}
+                        src={`${API_URL}${imageUrl}`}
                         alt={item.name}
                         style={{
                             maxWidth: '100%',

@@ -16,18 +16,22 @@ import ItemDetailPage from './pages/panel/items/ItemDetailPage';
 import OutfitDetailPage from './pages/panel/combinations/OutfitDetailPage';
 import TipDetailPage from './pages/panel/recommendations/TipDetailPage';
 import AddCombinationPage from './pages/panel/combinations/AddCombinationPage';
+import { useAppSelector } from './redux/hooks/redux';
+
+import EditItemPage from './pages/panel/items/EditItemPage';
 
 
 
 function App() {
   const dispatch = useAppDispatch();
+  const { token } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      dispatch(fetchCurrentUser());
+    const lsToken = localStorage.getItem('token');
+    if (lsToken && !token) {
+        dispatch(fetchCurrentUser());
     }
-  }, [dispatch]);
+}, []);
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
@@ -74,6 +78,13 @@ function App() {
             <AddItemPage />
           </ProtectedRoute>
         }
+      />
+      <Route path="/panel/items/:id/edit"
+       element={
+       <ProtectedRoute>
+        <EditItemPage />
+        </ProtectedRoute>
+      } 
       />
       <Route
         path="/panel/combinations"

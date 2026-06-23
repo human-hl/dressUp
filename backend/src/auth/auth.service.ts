@@ -82,9 +82,9 @@ async register(dto: RegisterDto) {
     sub: user.id,
     email: user.email,
     role: user.role,
-  };
+};
 
-  const token = this.jwtService.sign(payload); // ← один раз
+const token = this.jwtService.sign(payload);
 
   user.current_token = token;
   await this.userService.save(user);

@@ -89,14 +89,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
       }
 
       dispatch(
-  registerUser({
-    username: email.split("@")[0],
-    display_name: displayName,
-    email,
-    password,
-    birthday,
-  })
-)
+        registerUser({
+          username: email.split("@")[0],
+          display_name: displayName,
+          email,
+          password,
+          birthday,
+        })
+      )
     }
   }
 
@@ -137,14 +137,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
 
         {!isLogin && (
           <>
-          <TextField
-  fullWidth
-  label="Как вас зовут?"
-  variant="outlined"
-  sx={styles.field}
-  value={displayName}
-  onChange={(e) => setDisplayName(e.target.value)}
-/>
             <TextField
               fullWidth
               label="Повторите пароль"
@@ -153,6 +145,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
               sx={styles.field}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Как вас зовут?"
+              variant="outlined"
+              sx={styles.field}
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
             />
             <TextField
               fullWidth

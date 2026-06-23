@@ -8,6 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks/redux';
 import { fetchOutfits, deleteOutfit } from '../../../redux/slices/outfitsSlice';
+import { API_URL } from '../../../api/axios';
 import type { RootState } from '../../../redux/store';
 import type { IOutfit } from '../../../redux/types/dashboard';
 
@@ -20,7 +21,7 @@ const styles = {
     content: {
         flex: 1,
         p: { xs: '16px', sm: '24px', md: '32px' },
-        overflowY: 'auto',
+       overflow: 'auto',
         pb: { xs: '100px', md: '32px' },
     },
     whiteBox: {
@@ -48,16 +49,18 @@ const styles = {
         mb: '24px',
     },
     leftCol: {
-        flex: '1 1 45%',
-        minHeight: '500px',
-        border: '2px solid #487886',
-        borderRadius: '12px',
-        backgroundColor: '#FAFAFA',
-        position: 'relative',
-        overflow: 'visible',
-    },
+    flex: '1 1 45%',
+    minHeight: { xs: '300px', md: '500px' },
+    border: '2px solid #487886',
+    borderRadius: '12px',
+    backgroundColor: '#FAFAFA',
+    position: 'relative',
+    overflow: 'auto',
+    width: '100%',
+},
     rightCol: {
         flex: '1 1 55%',
+        minWidth: 0,
     },
     sectionTitle: {
         fontSize: '1.1rem',
@@ -86,6 +89,7 @@ const styles = {
         fontSize: '1rem',
         fontWeight: 500,
         color: '#5C4E40',
+        wordBreak: 'break-word',
     },
     itemsGrid: {
         display: 'grid',
@@ -105,6 +109,7 @@ const styles = {
     actions: {
         display: 'flex',
         gap: '12px',
+        flexWrap: 'wrap',
     },
     editBtn: {
         backgroundColor: '#487886',
@@ -116,6 +121,7 @@ const styles = {
         px: '20px',
         py: '10px',
         flex: 1,
+        minWidth: '140px',
         '&:hover': {
             backgroundColor: '#3b646f',
         },
@@ -129,17 +135,25 @@ const styles = {
         borderRadius: '20px',
         px: '20px',
         py: '10px',
+        flex: 1,
+        minWidth: '140px',
         '&:hover': {
             backgroundColor: '#f5c8f0',
         },
     },
 };
+
 const OutfitDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { outfits, loading } = useAppSelector((state: RootState) => state.outfits);
-  const [outfit, setOutfit] = useState<IOutfit | null>(null);
+    const [outfit, setOutfit] = useState<IOutfit | null>(null);
+    const canvasHeight = outfit?.items?.reduce((max, oi) => {
+    const right = (oi.position_x || 0) + (oi.width || 100);
+    const bottom = (oi.position_y || 0) + (oi.height || 100);
+    return Math.max(max, right + 50, bottom + 50);
+}, 300) || 300;
 
     useEffect(() => {
         if (outfits.length === 0) {
@@ -162,6 +176,7 @@ const OutfitDetailPage: React.FC = () => {
             }
         }
     };
+    
 
     if (loading || !outfit) {
         return (
@@ -188,8 +203,7 @@ const OutfitDetailPage: React.FC = () => {
                     </Box>
 
                     <Box sx={styles.mainRow}>
-                        {/* Левая колонка — коллаж */}
-                        <Box sx={styles.leftCol}>
+                        <Box sx={{ ...styles.leftCol, minHeight: `${canvasHeight}px`, width: `${canvasHeight * 1.5}px` }}>
                             {outfit.items?.map((oi) => {
                                 const img = oi.item?.image_no_bg_url || oi.item?.image_url;
                                 return (
@@ -206,7 +220,7 @@ const OutfitDetailPage: React.FC = () => {
                                     >
                                         {img ? (
                                             <img
-                                                src={`http://localhost:3000${img}`}
+                                                src={`${API_URL}${img}`}
                                                 alt={oi.item?.name}
                                                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                             />
@@ -218,13 +232,12 @@ const OutfitDetailPage: React.FC = () => {
                             })}
                         </Box>
 
-                        {/* Правая колонка — информация */}
                         <Box sx={styles.rightCol}>
                             <Typography sx={styles.sectionTitle}>Информация:</Typography>
                             <Box sx={styles.fieldsGrid}>
                                 <Box sx={styles.fieldBox}>
-                                    <Typography sx={styles.fieldLabel}>Цена</Typography>
-                                    <Typography sx={styles.fieldValue}>{outfit.cost || '-'} ₽</Typography>
+                                    <Typography sx={styles.fieldLabel}>Название</Typography>
+                                    <Typography sx={styles.fieldValue}>{outfit.name || '-'}</Typography>
                                 </Box>
                                 <Box sx={styles.fieldBox}>
                                     <Typography sx={styles.fieldLabel}>Погода</Typography>
@@ -240,7 +253,6 @@ const OutfitDetailPage: React.FC = () => {
                                 </Box>
                             </Box>
 
-                            {/* Предметы */}
                             {outfit.items && outfit.items.length > 0 && (
                                 <>
                                     <Typography sx={styles.sectionTitle}>Предметы:</Typography>

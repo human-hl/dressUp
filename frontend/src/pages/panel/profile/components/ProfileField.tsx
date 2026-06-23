@@ -40,7 +40,6 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
     return (
         <>
             <Box sx={{ mb: '16px' }}>
-                {/* Лейбл сверху */}
                 <Typography sx={{ fontSize: '0.85rem', color: '#5C4E40', fontWeight: 600, mb: '6px' }}>
                     {label}
                 </Typography>
@@ -57,7 +56,9 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: '10px',
-                                    border: '1px solid #487886',
+                                },
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#487886',
                                 },
                             }}
                         />
@@ -72,12 +73,14 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: '10px',
-                                        border: '1px solid #487886',
+                                    },
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: '#487886',
                                     },
                                 }}
                             />
                         )}
-                        
+
                         <Box sx={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                             <Button
                                 size="small"
@@ -104,13 +107,27 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                         </Box>
                     </Box>
                 ) : (
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography sx={{ fontSize: '0.95rem', color: '#3E2723' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: '8px',
+                        }}
+                    >
+                        <Typography
+                            sx={{
+                                fontSize: '0.95rem',
+                                color: '#3E2723',
+                                wordBreak: 'break-word',
+                                flex: 1,
+                            }}
+                        >
                             {type === 'password'
                                 ? '********'
                                 : type === 'date' && value
-                                    ? new Date(value).toLocaleDateString('ru-RU')
-                                    : value || '-'}
+                                ? new Date(value).toLocaleDateString('ru-RU')
+                                : value || '-'}
                         </Typography>
                         <Button
                             size="small"
@@ -118,6 +135,8 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                                 color: '#487886',
                                 textTransform: 'none',
                                 fontSize: '0.8rem',
+                                flexShrink: 0,
+                                whiteSpace: 'nowrap',
                                 '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' },
                             }}
                             onClick={handleEdit}

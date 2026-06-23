@@ -8,9 +8,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Sidebar from '../components/Sidebar';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { createItem } from '../../../redux/slices/itemsSlice';
+import { API_URL } from '../../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../../redux/hooks/redux';
 import api from '../../../api/axios';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import { useMediaQuery } from '@mui/material';
 
 const styles = {
     layout: {
@@ -22,7 +26,7 @@ const styles = {
         flex: 1,
         p: { xs: '16px', sm: '24px', md: '32px' },
         overflowY: 'auto',
-         pb: { xs: '100px', md: '32px' },
+        pb: { xs: '100px', md: '32px' },
     },
     whiteBox: {
         backgroundColor: '#FFFFFF',
@@ -145,7 +149,7 @@ const weathers = ['Лето', 'Зима', 'Демисезон', 'Дождь', '�
 const AddItemPage: React.FC = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-
+    const isMobile = useMediaQuery('(max-width: 900px)');
     const [name, setName] = useState('');
     const [cost, setCost] = useState('');
     const [color, setColor] = useState('');
@@ -156,7 +160,7 @@ const AddItemPage: React.FC = () => {
     const [image, setImage] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [imageNoBg, setImageNoBg] = useState<string | null>(null);
-   
+
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -165,6 +169,40 @@ const AddItemPage: React.FC = () => {
             setPreview(URL.createObjectURL(file));
         }
     };
+    const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxSize = 500;
+                let { width, height } = img;
+
+                if (width > height && width > maxSize) {
+                    height = (height / width) * maxSize;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = (width / height) * maxSize;
+                    height = maxSize;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const compressed = new File([blob], file.name, { type: 'image/jpeg' });
+                        resolve(compressed);
+                    }
+                }, 'image/jpeg', 0.7);
+            };
+            img.src = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    });
+};
 
     const handleRemoveBg = async () => {
     if (!image) {
@@ -172,58 +210,58 @@ const AddItemPage: React.FC = () => {
         return;
     }
 
+    const compressed = await compressImage(image);
+
     const formData = new FormData();
-    formData.append('image', image);
+    formData.append('image', compressed);
 
     try {
         const res = await api.post('/items/remove-bg', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
         setImageNoBg(res.data.url);
-        setPreview(`http://localhost:3000${res.data.url}`);
-        alert('Фон удалён!');
+        setPreview(`${API_URL}${res.data.url}`);
     } catch (err: any) {
         alert(err.response?.data?.message || 'Ошибка удаления фона');
     }
 };
 
-   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-        alert('Введите название предмета');
-        return;
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!name.trim()) {
+            alert('Введите название предмета');
+            return;
+        }
 
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('category', category);
-    formData.append('color', color);
-    formData.append('material', material);
-    formData.append('style', style);
-    formData.append('weather', weather);
-    formData.append('cost', cost);
-    
-    if (imageNoBg) {
-        // Если фон удалён — отправляем путь к фото без фона
-        formData.append('image_no_bg_url', imageNoBg);
-        // И оригинал тоже
-        if (image) {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('category', category);
+        formData.append('color', color);
+        formData.append('material', material);
+        formData.append('style', style);
+        formData.append('weather', weather);
+        formData.append('cost', cost);
+
+        if (imageNoBg) {
+            // Если фон удалён — отправляем путь к фото без фона
+            formData.append('image_no_bg_url', imageNoBg);
+            // И оригинал тоже
+            if (image) {
+                formData.append('image', image);
+            }
+        } else if (image) {
             formData.append('image', image);
         }
-    } else if (image) {
-        formData.append('image', image);
-    }
 
-    try {
-        await api.post('/items', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        alert('Предмет создан!');
-        navigate('/panel/items');
-    } catch (err: any) {
-        alert(err.response?.data?.message || 'Ошибка при создании');
-    }
-};
+        try {
+            await api.post('/items', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            navigate('/panel/items');
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'Ошибка при создании');
+        }
+    };
 
     return (
         <Box sx={styles.layout}>
@@ -237,21 +275,14 @@ const AddItemPage: React.FC = () => {
                     <Box sx={styles.mainRow}>
                         {/* Левая колонка — фото + удалить фон */}
                         <Box sx={styles.leftCol}>
-                            <Box
-                                sx={styles.imageUpload}
-                                onClick={() => document.getElementById('item-image')?.click()}
-                            >
+                            {/* Загрузка фото */}
+                            <Box sx={styles.imageUpload}>
                                 {preview ? (
                                     <Box sx={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <img
                                             src={preview}
                                             alt="preview"
-                                            style={{
-                                                maxWidth: '100%',
-                                                maxHeight: '400px',
-                                                borderRadius: '8px',
-                                                objectFit: 'contain',
-                                            }}
+                                            style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '8px', objectFit: 'contain' }}
                                         />
                                         <IconButton
                                             size="small"
@@ -260,6 +291,7 @@ const AddItemPage: React.FC = () => {
                                                 e.stopPropagation();
                                                 setImage(null);
                                                 setPreview(null);
+                                                setImageNoBg(null);
                                             }}
                                         >
                                             <DeleteIcon fontSize="small" />
@@ -268,12 +300,70 @@ const AddItemPage: React.FC = () => {
                                 ) : (
                                     <Box sx={{ textAlign: 'center' }}>
                                         <AddPhotoAlternateIcon sx={{ fontSize: '3.5rem', color: '#487886', mb: '8px' }} />
-                                        <Typography sx={{ color: '#8D6E63' }}>
+                                        <Typography sx={{ color: '#8D6E63', mb: '12px' }}>
                                             Нажмите, чтобы загрузить фото
                                         </Typography>
+                                        <Box sx={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                            <Button
+                                                variant="outlined"
+                                                startIcon={<PhotoLibraryIcon />}
+                                                sx={{
+                                                    borderColor: '#487886',
+                                                    color: '#487886',
+                                                    textTransform: 'none',
+                                                    borderRadius: '20px',
+                                                    fontSize: '0.8rem',
+                                                    '&:hover': { borderColor: '#3b646f', backgroundColor: '#F5FAFB' },
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const input = document.getElementById('item-image-gallery') as HTMLInputElement;
+                                                    input?.click();
+                                                }}
+                                            >
+                                                Галерея
+                                            </Button>
+                                            {isMobile && (
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<PhotoCameraIcon />}
+                                                    sx={{
+                                                        borderColor: '#487886',
+                                                        color: '#487886',
+                                                        textTransform: 'none',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.8rem',
+                                                        '&:hover': { borderColor: '#3b646f', backgroundColor: '#F5FAFB' },
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const input = document.getElementById('item-image-camera') as HTMLInputElement;
+                                                        input?.click();
+                                                    }}
+                                                >
+                                                    Камера
+                                                </Button>
+                                            )}
+                                        </Box>
                                     </Box>
                                 )}
-                                <input type="file" id="item-image" hidden accept="image/*" onChange={handleImageChange} />
+
+                                {/* Скрытые input'ы */}
+                                <input
+                                    type="file"
+                                    id="item-image-gallery"
+                                    hidden
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
+                                <input
+                                    type="file"
+                                    id="item-image-camera"
+                                    hidden
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleImageChange}
+                                />
                             </Box>
 
                             {image && (

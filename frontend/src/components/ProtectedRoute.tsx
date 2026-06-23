@@ -1,24 +1,17 @@
 import { Navigate } from 'react-router-dom';
-import { useAppSelector } from '../redux/hooks/redux';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { token, user, loading } = useAppSelector((state) => state.auth);
+    const token = localStorage.getItem('token');
 
-  // Есть токен в localStorage, но пользователь ещё загружается — ждём
-  if (localStorage.getItem('token') && (loading || !user)) {
-    return <div>Загрузка...</div>;
-  }
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
 
-  // Нет токена — редирект
-  if (!localStorage.getItem('token')) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
+    return <>{children}</>;
 };
 
 export default ProtectedRoute;

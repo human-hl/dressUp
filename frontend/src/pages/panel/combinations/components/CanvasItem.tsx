@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useDraggable } from '@dnd-kit/core';
 import { useState, useCallback } from 'react';
 import type { CanvasItem as CanvasItemType } from '../AddCombinationPage';
+import { API_URL } from '../../../../api/axios';
 
 interface CanvasItemProps {
     item: CanvasItemType;
@@ -19,33 +20,37 @@ const CanvasItemComponent: React.FC<CanvasItemProps> = ({ item, onRemove, onResi
     const [resizing, setResizing] = useState(false);
     const imageUrl = item.image_no_bg_url || item.image_url;
 
-    const handleResizeStart = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
-        setResizing(true);
+   const handleResizeStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setResizing(true);
 
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startWidth = item.width;
-        const startHeight = item.height;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const startWidth = item.width;
+    const startHeight = item.height;
 
-        const handleMouseMove = (moveEvent: MouseEvent) => {
-            const deltaX = moveEvent.clientX - startX;
-            const deltaY = moveEvent.clientY - startY;
-            const newWidth = Math.max(50, startWidth + deltaX);
-            const newHeight = Math.max(50, startHeight + deltaY);
-            onResize(item.dndId, newWidth, newHeight);
-        };
+    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
+        const moveX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX;
+        const moveY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY;
+        const newWidth = Math.max(50, startWidth + moveX - clientX);
+        const newHeight = Math.max(50, startHeight + moveY - clientY);
+        onResize(item.dndId, newWidth, newHeight);
+    };
 
-        const handleMouseUp = () => {
-            setResizing(false);
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
+    const handleEnd = () => {
+        setResizing(false);
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('mouseup', handleEnd);
+        document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('touchend', handleEnd);
+    };
 
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    }, [item, onResize]);
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleEnd);
+}, [item, onResize]);
 
     return (
         <Box
@@ -80,7 +85,7 @@ const CanvasItemComponent: React.FC<CanvasItemProps> = ({ item, onRemove, onResi
             >
                 {imageUrl ? (
                     <img
-                        src={`http://localhost:3000${imageUrl}`}
+                        src={`${API_URL}${imageUrl}`}
                         alt={item.name}
                         style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
                         draggable={false}
@@ -113,6 +118,7 @@ const CanvasItemComponent: React.FC<CanvasItemProps> = ({ item, onRemove, onResi
             {/* Маркер изменения размера (правый нижний угол) */}
             <Box
                 onMouseDown={handleResizeStart}
+                onTouchStart={handleResizeStart}
                 sx={{
                     position: 'absolute',
                     bottom: -6,

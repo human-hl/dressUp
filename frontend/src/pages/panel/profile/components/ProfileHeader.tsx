@@ -17,7 +17,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ displayName, email, birth
                 borderRadius: '12px',
                 p: '16px',
                 flex: 1,
-                maxWidth: '400px',
+                maxWidth: '100%',
+                minWidth: 0,
+                overflow: 'hidden',
             }}
         >
             <Avatar
@@ -26,15 +28,33 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ displayName, email, birth
                     height: 56,
                     backgroundColor: '#487886',
                     fontSize: '1.4rem',
+                    flexShrink: 0,
                 }}
             >
                 {displayName?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
-            <Box>
-                <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, color: '#3E2723' }}>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography
+                    sx={{
+                        fontSize: '1.1rem',
+                        fontWeight: 700,
+                        color: '#3E2723',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    }}
+                >
                     {displayName}
                 </Typography>
-                <Typography sx={{ fontSize: '0.85rem', color: '#8D6E63' }}>
+                <Typography
+                    sx={{
+                        fontSize: '0.85rem',
+                        color: '#8D6E63',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    }}
+                >
                     {email}
                 </Typography>
                 {birthday && (

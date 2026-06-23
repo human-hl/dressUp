@@ -1,6 +1,7 @@
 import { Card, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/material';
+import { API_URL } from '../../../../api/axios';
 
 interface OutfitCardProps {
     outfit: {
@@ -55,7 +56,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ outfit }) => {
                         >
                             {img ? (
                                 <img
-                                    src={`http://localhost:3000${img}`}
+                                    src={`${API_URL}${img}`}
                                     alt=""
                                     style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                                 />
